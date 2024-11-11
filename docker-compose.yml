@@ -1,0 +1,38 @@
+services:
+
+  web:
+    image: testrunner
+    working_dir: /app
+    build:
+      context: .
+    command: fastapi dev --host 0.0.0.0 --port 8000 main.py
+    # Run below command for production
+    # command: fastapi run --host 0.0.0.0 --port 8000 main.py
+    volumes:
+      - ./app:/app
+      - ./tests:/tests
+    ports:
+      - 8000:8000
+  
+  curlrunner:
+    image: testrunner
+    working_dir: /scripts
+    depends_on:
+      - web
+    build:
+      context: .
+    volumes:
+      - ./scripts:/scripts
+    command: ./curl_script.sh
+    environment:
+      - URI=web
+
+  test:
+    image: testrunner
+    working_dir: /tests
+    build:
+      context: .
+    volumes:
+      - ./app:/app
+      - ./tests:/tests
+    command: pytest -svvx .
