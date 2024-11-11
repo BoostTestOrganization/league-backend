@@ -10,12 +10,52 @@ from starlette.datastructures import UploadFile
 
 
 def fetch_formatted_stream_data(chain_iterables):
+    """
+    Parameters:
+    -----------
+    chain_iterables: list of iterables that will be used together to return the final output
+    """
     for data in chain(chain_iterables):
         yield ",".join(map(str, data)) + "\n"
 
 
 class CSVUtil:
+    """
+    Responsible for csv related operations
+    Methods
+    -------
+    _validate_and_get(csvfile)
+        take incoming csvfile as input file object of either type 
+        PosixPath or UploadFile and returns an appropriate file object 
+        that can be used to do operations on
 
+    _check_upload_file(csvfile)
+        UploadFile type Validator
+    
+    _check_posix_path_file(csvfile)
+        PosixPath type validator
+    
+    _chunk_reader(csvfile, chunk_size, operation)
+        Basic chunking opeation on csv reader object with a default chunk size and list operation params
+    
+    flatten(csvfile)
+        a geenrator that returns an unwrapped flat list of values of the csv file contents
+    
+    echo(csvfile)
+        generator that returns the contents of the csvfile
+    
+    invert(csvfile)
+        geenrator that returns the trnaspose contents of the csvfile
+    
+    flat(csvfile)
+        a formatted list of the flatten results that I use for testing
+    
+    sum(csvfile)
+        sum of all the numbers in the csv file
+    
+    multiply(csvfile)
+        product of all the numbers in the csv file
+    """
     def __init__(self, csvfile):
        self.csvfile = self._validate_and_get(csvfile)
 
@@ -25,6 +65,7 @@ class CSVUtil:
             return csvfile
         elif isinstance(csvfile, UploadFile):
             self._check_upload_file(csvfile)
+            # need to persist spooled temp file becasue it only exists in memory for dmall sizes
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 shutil.copyfileobj(csvfile.file, temp_file)
             return temp_file.name
