@@ -1,0 +1,22 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  boost-image:
+    name: Image-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build Image
+        run: docker build --tag "boosttestorganization/league-backend:latest" .
+      - name: Run Native Scanner
+        uses: boostsecurityio/boostsec-scanner-github@v4
+        env:
+          BOOST_IMAGE_NAME: boosttestorganization/league-backend:latest
+        with:
+          api_endpoint: https://api.dev.boostsec.io
+          api_token: ${{ secrets.BOOST_API_TOKEN }}
+          registry_module: boostsecurityio/trivy-image
